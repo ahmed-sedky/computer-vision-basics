@@ -1,9 +1,9 @@
-from libs import normalization ,equalization ,resizeImg
+from libs import normalization ,equalization ,resizeImg, filters
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 # Load an color image 
-img = cv2.imread('images/lenna.png') 
+img = cv2.imread('images/noisysalterpepper.png') 
 #========================================================
 
 # show original image
@@ -30,11 +30,11 @@ img = cv2.cvtColor(img , cv2.COLOR_BGR2GRAY)
 img = cv2.convertScaleAbs(img ,alpha= 1.10 ,beta= -20)
 equalization.histogram_equaliztion(img)
 equaled_hist = equalization.Histogram (img)
-plt.plot(equaled_hist)
-plt.show()
+filters.average_filter(img, 3)
+filters.median_filter(img)
+filters.gaussian_filter(img,15,3)
+blur = cv2.blur(img,(7,7))
+cv2.imwrite("open_cv.png", blur)
+# plt.plot(equaled_hist)
+# plt.show()
 # =====================================================
-
-
-# show resized image 
-resizeImg.show_resized_img(img ,60)
-#=====================================================

@@ -9,7 +9,7 @@ from scipy import  signal
 def create_gaussian_kernel (size:int, std_dev:float):
     kernel = np.fromfunction(lambda x, y: (1/(2*pi*std_dev**2)) * exp((-1*((x-(size-1)/2)**2+(y-(size-1)/2)**2))/(2*std_dev**2)),
      (size, size))
-    return kernel/np.sum(kernel)
+    return (kernel/np.sum(kernel))
 
 
 def median (array):
@@ -46,7 +46,7 @@ def median_filter(image):
     cv2.imwrite('median_filtered_image.png', filtered_image)
 
 def gaussian_filter(image, size:int, std_dev:float):
-    kernel  = create_gaussian_kernel(size,std_dev)
+    kernel = create_gaussian_kernel(size,std_dev)
     filtered_image = signal.convolve2d(image, kernel)
     filtered_image = filtered_image.astype(np.uint8)
     cv2.imwrite('gaussian_filtered_image.png', filtered_image)
