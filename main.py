@@ -1,4 +1,4 @@
-from libs import normalization ,equalization ,resizeImg, filters
+from libs import normalization ,equalization ,resizeImg, filters , mean , noise
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
