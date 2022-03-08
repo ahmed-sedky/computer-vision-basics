@@ -55,6 +55,12 @@ def rgb_histogram(image):
 
 
 def distribution_curve(image):
+    if(len(image.shape)<3):
+      grayscale_distribution_curve(image)
+    elif len(image.shape)==3:
+      rgb_distribution_curve(image)
+
+def grayscale_distribution_curve(image):
     mean = image_mean(image)
     standard_deviation = image_standard_deviation(image)
     probability_density = (np.pi * standard_deviation) * np.exp(
@@ -62,5 +68,19 @@ def distribution_curve(image):
     )
     plt.plot(image.shape[:2], probability_density, color="red")
     plt.xlabel("Data points")
+    plt.ylabel("Probability Density")
+    plt.show()
+
+def rgb_distribution_curve(image):
+    mean = image_mean(image)
+    standard_deviation = image_standard_deviation(image)
+    colors = ["blue", "green", "red"]
+
+    for i in range(3):
+        probability_density = (np.pi * standard_deviation[i]) * np.exp(
+            -0.5 * ((image.shape[:2] - mean[i]) / standard_deviation[i]) ** 2
+        )
+        plt.plot(image.shape[:2], probability_density, color=colors[i])
+    plt.xlabel("RGB values")
     plt.ylabel("Probability Density")
     plt.show()
