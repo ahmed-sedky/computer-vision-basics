@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 # Load an color image 
-img = cv2.imread('images/noisysalterpepper.png') 
+img = cv2.imread('images/apple.jpg') 
 #========================================================
 
 # show original image
@@ -13,13 +13,13 @@ img = cv2.imread('images/noisysalterpepper.png')
 #=========================================================
 
 #call normalization
-# new_max = 255 
-# new_min = 100
-# normalization.normalize(img ,new_max ,new_min)
+new_max = 255 
+new_min = 100
+normalization.normalize(img ,new_max ,new_min)
 #=========================================================
 
 # call histogram
-
+# img = cv2.cvtColor(img , cv2.COLOR_BGR2GRAY)
 # equalization.Histogram (img)
 # plt.show()
 #==========================================================
@@ -35,6 +35,4 @@ filters.median_filter(img)
 filters.gaussian_filter(img,15,3)
 blur = cv2.blur(img,(7,7))
 cv2.imwrite("open_cv.png", blur)
-# plt.plot(equaled_hist)
-# plt.show()
 # =====================================================
