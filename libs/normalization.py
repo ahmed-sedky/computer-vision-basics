@@ -1,18 +1,9 @@
 import numpy as np
 import cv2
-
+from utilities import max_min
 def normalize(img , new_max ,new_min):
-    rows,cols,_ = img.shape
-    # red
-    min_b = img[..., 0].min()
-    max_b = img[..., 0].max()
-    # green
-    min_g = img[...,1 ].min()
-    max_g = img[..., 1].max()
-    # blue
-    min_r = img[..., 2].min()
-    max_r = img[..., 2].max()
-
+    min_b,max_b,min_g,max_g,min_r,max_r =  max_min.max_min(img)
+    rows,cols,_= img.shape 
     for i in range(rows):
         for j in range(cols):
             img[i,j][0] = int ( ( (img[i,j][0] - min_b) * ( (new_max - new_min) /  (max_b - min_b) ) ) + new_min)
