@@ -9,9 +9,9 @@ from libs.utils import (
 
 
 def histogram(image):
-    if image.mode == "L":
+    if (len(image.shape)<2):
         grayscale_histogram(image)
-    elif image.mode == "RGB":
+    elif (len(image.shape)==3):
         rgb_histogram(image)
 
 
@@ -49,9 +49,9 @@ def rgb_histogram(image):
 
 
 def distribution_curve(image):
-    if image.mode == "L":
+    if (len(image.shape)<2):
         grayscale_distribution_curve(image)
-    elif image.mode == "RGB":
+    elif (len(image.shape)==3):
         rgb_distribution_curve(image)
 
 

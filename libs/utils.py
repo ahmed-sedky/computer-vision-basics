@@ -1,6 +1,27 @@
 import cv2
+import numpy as np
 from math import ceil, floor
 
+def convolution(image, kernel):
+    convolvedImage = np.zeros(image.shape)
+    paddingHeight = int((len(kernel) - 1) / 2)
+    paddingWidth = int((len(kernel[0]) - 1) / 2)
+
+    padded_image = np.zeros(
+        (len(image) + (2 * paddingHeight), len(image[0]) + (2 * paddingWidth))
+    )
+
+    padded_image[
+        paddingHeight : padded_image.shape[0] - paddingHeight,
+        paddingWidth : padded_image.shape[1] - paddingWidth,
+    ] = image
+    for row in range(len(image)):
+        for col in range(len(image[0])):
+            convolvedImage[row, col] = np.sum(
+                kernel
+                * padded_image[row : row + len(kernel), col : col + len(kernel[0])]
+            )
+    return convolvedImage
 
 def rgb_to_bw(pixel):
     return round(0.2126 * pixel[0] + 0.7152 * pixel[1] + 0.0722 * pixel[2])
@@ -59,49 +80,49 @@ def max_min_gray(img):
 
 
 def image_mean(image):
-    if image.mode == "L":
+    if (len(image.shape)<2):
         return mean_grey(image)
-    elif image.mode == "RGB":
+    elif (len(image.shape)==3):
         return mean_rgb(image)
 
 
 def mean_grey(img):
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    row, column = img.size
+    row, column = img.shape
     sum = 0
     for y in range(0, row):
         for x in range(0, column):
-            sum = sum + img.getpixel((y, x))
+            sum = sum + img[y, x]
 
     img_mean = sum / img.size
     return img_mean
 
 
 def mean_rgb(img):
-    row, column = img.size
+    row, column = img.shape[:2]
     sum_blue = sum_green = sum_red = 0
     size = row * column
     for y in range(0, row):
         for x in range(0, column):
-            sum_blue = sum_blue + img.getpixel((y, x))[0]
-            sum_green = sum_green + img.getpixel((y, x))[1]
-            sum_red = sum_red + img.getpixel((y, x))[2]
+            sum_blue = sum_blue + img[y, x][0]
+            sum_green = sum_green + img[y, x][1]
+            sum_red = sum_red + img[y, x][2]
 
     img_mean = [sum_blue / size, sum_green / size, sum_red / size]
     return img_mean
 
 
 def image_standard_deviation(image):
-    if image.mode == "L":
+    if (len(image.shape)<2):
         return std_grey(image)
-    elif image.mode == "RGB":
+    elif (len(image.shape)==3):
         return std_rgb(image)
 
 
 def std_grey(img):
     m = mean_grey(img)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    row, column = img.size
+    row, column = img.shape
     sum = 0
     for y in range(0, row):
         for x in range(0, column):
@@ -113,14 +134,14 @@ def std_grey(img):
 
 def std_rgb(img):
     m = mean_rgb(img)
-    row, column = img.size
+    row, column = img.shape[:2]
     size = row * column
     sum_blue = sum_red = sum_green = 0
     for y in range(0, row):
         for x in range(0, column):
-            sum_blue = sum_blue + (img.getpixel((y, x))[0] - m[0]) ** 2
-            sum_green = sum_green + (img.getpixel((y, x))[1] - m[1]) ** 2
-            sum_red = sum_red + (img.getpixel((y, x))[2] - m[2]) ** 2
+            sum_blue = sum_blue + (img[y, x][0] - m[0]) ** 2
+            sum_green = sum_green + (img[y, x][1] - m[1]) ** 2
+            sum_red = sum_red + (img[y, x][2] - m[2]) ** 2
 
     std_blue = (sum_blue / size) ** 0.5
     std_red = (sum_red / size) ** 0.5
@@ -130,9 +151,9 @@ def std_rgb(img):
 
 
 def get_pixel_values(image):
-    if image.mode == "L":
+    if (len(image.shape)<2):
         return grayscale_values(image)
-    elif image.mode == "RGB":
+    elif (len(image.shape)==3):
         return rgb_values(image)
 
 
@@ -142,32 +163,32 @@ def grayscale_values(image):
     for i in range(height):
         for j in range(width):
             for k in range(3):
-                pixel = image.getpixel((i, j))[k]
+                pixel = image[i, j][k]
                 pixel_values.append(pixel)
     return pixel_values
 
 
 def rgb_values(image):
-    height, width = image.size
+    height, width = image.shape[:2]
     rgb_values = [[], [], []]
     for i in range(height):
         for j in range(width):
             for k in range(3):
-                pixel = image.getpixel((i, j))[k]
+                pixel = image[i, j][k]
                 rgb_values[k].append(pixel)
     return rgb_values
 
 
 def frequencies_of_pixel_values(image):
-    if image.mode == "L":
+    if (len(image.shape)<2):
         return grayscale_frequencies(image)
-    elif image.mode == "RGB":
+    elif (len(image.shape)==3):
         return rgb_frequencies(image)
 
 
 def grayscale_frequencies(image):
     frequencies = {}
-    height, width = image.size
+    height, width = image.shape
     for i in range(height):
         for j in range(width):
             pixel = image.getpixel((i, j))
@@ -177,11 +198,11 @@ def grayscale_frequencies(image):
 
 def rgb_frequencies(image):
     frequencies = [{}, {}, {}]
-    height, width = image.size
+    height, width = image.shape[:2]
     for i in range(height):
         for j in range(width):
             for k in range(3):
-                pixel = image.getpixel((i, j))[k]
+                pixel = image[i, j][k]
                 frequencies[k][pixel] = (
                     frequencies[k][pixel] + 1 if (pixel in frequencies[k]) else 1
                 )
