@@ -24,20 +24,12 @@ img = Image.open("images/lenna.png")
 
 # call equaliztion and filter
 
-# img = img.convert('L')
-# img.show()
-# img = cv2.convertScaleAbs(img ,alpha= 1.10 ,beta= -20)
-# equalization.Histogram(img)
-# plt.show()
+# img = cv2.cvtColor(img , cv2.COLOR_BGR2GRAY)
 # equalization.histogram_equaliztion(img)
 # equaled_hist = equalization.Histogram (img)
-# filters.average_filter(img, 3)
-# filters.median_filter(img)
-# filters.gaussian_filter(img,3,3)
-# blur = cv2.blur(img,(7,7))
-# cv2.imwrite("open_cv.png", blur)
-# plt.plot(equaled_hist)
 # plt.show()
+img = img.convert('L')
+img.show()
 # =====================================================
 
 # call distribution curve
