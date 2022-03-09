@@ -1,11 +1,7 @@
-from ctypes import sizeof
-from math import ceil, floor, pi, exp
-from matplotlib import pyplot as plt
-import numpy as np 
-from rsa import sign
+from math import pi, exp
+import numpy as np
 from scipy import signal
 from libs.utils import median
-import PIL
 
 
 def create_gaussian_kernel(kernel_size: int, std_dev: float):
@@ -18,9 +14,6 @@ def create_gaussian_kernel(kernel_size: int, std_dev: float):
         (kernel_size, kernel_size),
     )
     return kernel / np.sum(kernel)
-
-
-
 
 
 def average_filter(image, kernel_size: int):
