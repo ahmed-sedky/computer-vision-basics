@@ -32,3 +32,5 @@ def histogram_equaliztion(img ):
             k = img [i ,j]
             img[i ,j] = y[k]
 
+
+
