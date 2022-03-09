@@ -1,31 +1,31 @@
 from libs.utils import max_min
-def normalize_RGB(img , new_max ,new_min):
-    min_b,max_b,min_g,max_g,min_r,max_r =  max_min.max_min(img)
-    rows,cols,_= img.shape 
-    for i in range(rows):
-        for j in range(cols):
-            img[i, j][0] = int(
-                ((img[i, j][0] - min_b) * ((new_max - new_min) / (max_b - min_b)))
+def normalize_RGB(image , new_max ,new_min):
+    min_b,max_b,min_g,max_g,min_r,max_r =  max_min(image)
+    width, height = image.size
+    pixels = image.load()
+    for i in range(width):
+        for j in range(height):
+            pixels[i, j] = (int(
+                ((pixels[i, j][0] - min_b) * ((new_max - new_min) / (max_b - min_b)))
                 + new_min
-            )
-            img[i, j][1] = int(
-                ((img[i, j][1] - min_g) * ((new_max - new_min) / (max_g - min_g)))
+            ), int(
+                ((pixels[i, j][1] - min_g) * ((new_max - new_min) / (max_g - min_g)))
                 + new_min
-            )
-            img[i, j][2] = int(
-                ((img[i, j][2] - min_r) * ((new_max - new_min) / (max_r - min_r)))
+            ), int(
+                ((pixels[i, j][2] - min_r) * ((new_max - new_min) / (max_r - min_r)))
                 + new_min
-            )
+            ))
 
-def normalize_Gray(img , new_max ,new_min):
-    min_gray,max_gray =  max_min.max_min(img)
-    shape= img.shape 
-    for i in range(shape[0]):
-        for j in range(shape[1]):
-            img[i,j] = int ( ( (img[i,j] - min_gray) * ( (new_max - new_min) /  (max_gray - min_gray) ) ) + new_min)
+def normalize_Gray(image , new_max ,new_min):
+    min_gray,max_gray =  max_min(image)
+    width, height = image.size
+    pixels = image.load()
+    for i in range(width):
+        for j in range(height):
+            pixels[i,j] = int ( ( (pixels[i,j] - min_gray) * ( (new_max - new_min) /  (max_gray - min_gray) ) ) + new_min)
 
-def normalize(img ,new_max ,new_min):
-    if len(img.shape) == 3:
-        normalize_RGB(img,new_max,new_min)
+def normalize(image ,new_max ,new_min):
+    if image.mode == 'L':
+        normalize_Gray(image,new_max,new_min)
     else:
-        normalize_Gray(img,new_max,new_min)
+        normalize_RGB(image,new_max,new_min)

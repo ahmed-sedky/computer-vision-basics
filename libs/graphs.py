@@ -26,6 +26,8 @@ def grayscale_histogram(image):
     plt.ylabel("No. of pixels")
     plt.show()
 
+    return frequencies
+
 
 def rgb_histogram(image):
     frequencies = frequencies_of_pixel_values(image)
@@ -43,6 +45,7 @@ def rgb_histogram(image):
     plt.xlabel("RGB values")
     plt.ylabel("No. of occurences")
     plt.show()
+    return frequencies
 
 
 def distribution_curve(image):
