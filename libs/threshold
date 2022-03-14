@@ -1,0 +1,83 @@
+import numpy as np
+import cv2
+
+
+def global_threshold(img , T0):
+        
+        otsu_threshold, image_result = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU,)
+        print("Obtained threshold: ", otsu_threshold)
+        row , column = img.shape
+        sum_above = sum_below = no_above = no_below= 0
+        for y in range(0,row):
+                for x in range(0,column):               
+                        if img[y,x] > T0:
+                              sum_above = sum_above + img[y,x]
+                              no_above +=1
+                        else:
+                              
+                              sum_below = sum_below + img[y,x]
+                              no_below +=1
+        
+        mean_above = sum_above / no_above 
+        mean_below = sum_below / no_below
+
+        T_new = (mean_above + mean_below)/2
+        if abs(T_new - T0) > 0.5:
+              global_threshold(img , T_new)
+        else:
+                print(T_new)
+                for y in range(0,row):
+                    for x in range(0,column):               
+                        if img[y,x] > T0:
+                               img[y,x] = 255
+                              
+                        else:
+                              
+                          img[y,x] = 0
+        
+        return img
+                              
+
+
+
+
+
+def local_threshold(img):
+
+
+    threshold_img = np.zeros_like(img)
+    row, column = img.shape
+
+    int_img = np.zeros_like(img, dtype=np.uint32)
+    for y in range(column):
+        for x in range(row):
+            int_img[x,y] = img[0:x,0:y].sum()
+
+
+    s = column/16
+    T = 10.0
+
+    for y in range(column):
+        for x in range(row):
+            y1 = int(max(x-s, 0))
+            y2 = int(min(x+s, row-1))
+            x1 = int(max(y-s, 0))
+            x2 = int(min(y+s, column-1))
+
+            count = (y2-y1)*(x2-x1)
+
+            sum_ = int_img[y2, x2]-int_img[y1, x2]-int_img[y2, x1]+int_img[y1, x1]
+
+            if img[x, y]*count < sum_*(100.-T)/100.:
+                threshold_img[x,y] = 0
+            else:
+                threshold_img[x,y] = 255
+
+    return threshold_img
+
+
+def threshold(img ,index , thres_value):
+        if index == 0:
+                return global_threshold(img , thres_value )
+        else:
+                return local_threshold(img)
