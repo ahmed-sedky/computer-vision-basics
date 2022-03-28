@@ -1,13 +1,14 @@
 import cv2
+import numpy as np
+from libs import utils
 from random import randint
 import numpy as np
 from libs import utils
 
 
 def sp_noise(img):
-
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    row, column = img.shape
+    salt_and_pepper_image = img.copy()
+    row, column = salt_and_pepper_image.shape[:2]
     pixels_no = row * column
     white_pixels = randint(pixels_no // 500, pixels_no // 100)
     black_pixels = randint(pixels_no // 500, pixels_no // 100)
@@ -16,19 +17,19 @@ def sp_noise(img):
 
         y = randint(0, row - 1)
         x = randint(0, column - 1)
-        img[y, x] = 0
+        salt_and_pepper_image[y, x] = 0
 
     for i in range(white_pixels):
 
         y = randint(0, row - 1)
         x = randint(0, column - 1)
-        img[y, x] = 255
+        salt_and_pepper_image[y, x] = 255
 
-    return img
+    return salt_and_pepper_image
 
 
 def uniform_noise(img):
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    uniform_img = img.copy()
     offset = randint(0, 255)
     # offset = 0
     print(offset)

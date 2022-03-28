@@ -9,7 +9,10 @@ def Histogram(image):
     for i in range(shape[0]):
         for j in range(shape[1]):
             gray_value = image[i, j]
-            hist[gray_value, 0] = hist[gray_value, 0] + 1
+            if(gray_value.dtype == np.float64):
+                hist[int(gray_value), 0] = hist[int(gray_value), 0] + 1
+            else:
+                hist[gray_value, 0] = hist[gray_value, 0] + 1
 
     plt.plot(hist)
     plt.xlabel("gray_values")
@@ -33,7 +36,7 @@ def histogram_equaliztion_gray(img ):
     for i in range(shape[0]):
         for j in range(shape[1]):
             k = img[i, j]
-            img[i, j] = y[k]
+            img[i, j] = y[int(k)]
 
 def histogram_equaliztion_rgb(img ):
     rows,cols,channels =img.shape

@@ -80,21 +80,20 @@ def max_min_gray(img):
 
 
 def image_mean(image):
-    if (len(image.shape)<2):
+    if (len(image.shape)<3):
         return mean_grey(image)
     elif (len(image.shape)==3):
         return mean_rgb(image)
 
 
 def mean_grey(img):
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     row, column = img.shape
     sum = 0
     for y in range(0, row):
         for x in range(0, column):
             sum = sum + img[y, x]
 
-    img_mean = sum / img.size
+    img_mean = sum / (row * column)
     return img_mean
 
 
@@ -113,7 +112,7 @@ def mean_rgb(img):
 
 
 def image_standard_deviation(image):
-    if (len(image.shape)<2):
+    if (len(image.shape)<3):
         return std_grey(image)
     elif (len(image.shape)==3):
         return std_rgb(image)
@@ -121,14 +120,13 @@ def image_standard_deviation(image):
 
 def std_grey(img):
     m = mean_grey(img)
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     row, column = img.shape
     sum = 0
     for y in range(0, row):
         for x in range(0, column):
-            z = (img.getpixel((y, x)) - m) ** 2
+            z = (img[y, x] - m) ** 2
             sum = sum + z
-    std = (sum / img.size) ** 0.5
+    std = (sum / (row * column)) ** 0.5
     return std
 
 
@@ -151,20 +149,19 @@ def std_rgb(img):
 
 
 def get_pixel_values(image):
-    if (len(image.shape)<2):
+    if (len(image.shape)<3):
         return grayscale_values(image)
     elif (len(image.shape)==3):
         return rgb_values(image)
 
 
 def grayscale_values(image):
-    height, width = image.size
+    height, width = image.shape[:2]
     pixel_values = []
     for i in range(height):
         for j in range(width):
-            for k in range(3):
-                pixel = image[i, j][k]
-                pixel_values.append(pixel)
+            pixel = image[i, j]
+            pixel_values.append(pixel)
     return pixel_values
 
 
@@ -180,7 +177,7 @@ def rgb_values(image):
 
 
 def frequencies_of_pixel_values(image):
-    if (len(image.shape)<2):
+    if (len(image.shape)<3):
         return grayscale_frequencies(image)
     elif (len(image.shape)==3):
         return rgb_frequencies(image)
@@ -191,7 +188,7 @@ def grayscale_frequencies(image):
     height, width = image.shape
     for i in range(height):
         for j in range(width):
-            pixel = image.getpixel((i, j))
+            pixel = image[i, j]
             frequencies[pixel] = frequencies[pixel] + 1 if (pixel in frequencies) else 1
     return frequencies
 
@@ -207,10 +204,3 @@ def rgb_frequencies(image):
                     frequencies[k][pixel] + 1 if (pixel in frequencies[k]) else 1
                 )
     return frequencies
-
-def convert_RGB_to_grayscale(image):
-   width, height = image.size
-   pixels = image.load()
-   for i in range(width):
-       for j in range(height):
-           pixels[i, j] = (rgb_to_bw(pixels[i, j]), rgb_to_bw(pixels[i, j]), rgb_to_bw(pixels[i, j])) 
