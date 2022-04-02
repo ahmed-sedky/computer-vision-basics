@@ -2,8 +2,6 @@ import cv2
 import numpy as np
 from libs import utils
 from random import randint
-import numpy as np
-from libs import utils
 
 
 def sp_noise(img):
@@ -31,22 +29,18 @@ def sp_noise(img):
 def uniform_noise(img):
     uniform_img = img.copy()
     offset = randint(0, 255)
-    # offset = 0
-    print(offset)
-    row, column = img.shape
+    row, column = uniform_img.shape[:2]
     for y in range(0, row):
         for x in range(0, column):
 
-            img[y, x] = (img[y, x] + offset) % 255
+            uniform_img[y, x] = (uniform_img[y, x] + offset) % 255
 
-
-    return img
+    return uniform_img
 
 
 def gauss_noise(img):
         mean = utils.mean_grey(img)
         std = utils.std_grey(img)
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         row , column = img.shape
         gauss = np.random.normal(mean,std,(row,column))
         gauss = np.asanyarray(gauss , dtype= np.uint8)

@@ -4,12 +4,12 @@ from libs.utils import convolution
 from libs import filters
 
 
-def canny(image):
+def canny(image,minThreshold ,maxThreshold):
 
     sobelHKernel = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]])
     sobelVKernel = np.array([[-1, -2, -1], [0, 0, 0], [1, 2, 1]])
 
-    image = filters.gaussian_filter(image, 9, 1.5)
+    image = filters.gaussian_filter(image, 5, 1.5)
     horizontalConv = convolution(image, sobelHKernel)
     verticalConv = convolution(image, sobelVKernel)
 
@@ -64,8 +64,8 @@ def canny(image):
     strong_row, strong_col = np.where(supression >= 20)
     weak_row, weak_col = np.where((supression <= 20) & (supression >= 5))
 
-    threshold[strong_row, strong_col] = 255
-    threshold[weak_row, weak_col] = 100
+    threshold[strong_row, strong_col] = maxThreshold
+    threshold[weak_row, weak_col] = minThreshold
 
     # hysteresis
     thresholdRows, thresholdCols = threshold.shape

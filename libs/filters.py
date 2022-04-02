@@ -54,7 +54,7 @@ def gaussian_filter(image, size: int, std_dev: float):
 
 def hybrid (image1 ,image2):
     gaussian_blurred_image = gaussian_filter(image1,21,3)
-    sobel_img = sobel(image2)
+    sobel_img , _ = sobel(image2)
     hybrid_img = sobel_img + gaussian_blurred_image
     return hybrid_img
 
