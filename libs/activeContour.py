@@ -141,13 +141,13 @@ def calculate_external_energy(source, WLine, WEdge):
 
     ELine = cv2.GaussianBlur(gray,(7,7),7)	
     EEdge = Sobel.sobel(ELine)
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    ax.imshow(EEdge, cmap='gray')
-    ax.set_xticks([])
-    ax.set_yticks([])
-    ax.set_xlim(0, src.shape[1])
-    ax.set_ylim(src.shape[0], 0)
-    plt.show()
+    # fig = plt.figure()
+    # ax = fig.add_subplot(111)
+    # ax.imshow(EEdge, cmap='gray')
+    # ax.set_xticks([])
+    # ax.set_yticks([])
+    # ax.set_xlim(0, src.shape[1])
+    # ax.set_ylim(src.shape[0], 0)
+    # plt.show()
     return WLine * ELine + WEdge * EEdge[1:-1,1:-1]
 
