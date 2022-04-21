@@ -23,7 +23,7 @@ def houghLine(image , rhoResolution = 1 ,thetaResolution = 1):
                     accumulator[int(rho) + max_dis , theta] += 1
     return accumulator, thetas, rhos
 
-def houghCircle(img, threshold, region, radius = [3,30]):
+def houghCircle(img, threshold, region, radius = [30,3]):
     grayscale_image = filters.grayscale(img)
     edgedImg = edge_detection.canny(grayscale_image,100,150)
     (rows, cols) = edgedImg.shape
@@ -61,10 +61,10 @@ def houghCircle(img, threshold, region, radius = [3,30]):
     for r, x, y in np.argwhere(A):
         temp = A[r - region:r + region, x - region:x + region, y - region:y + region]
         try:
-            p, a, b = np.unravel_index(np.argmax(temp), temp.shape)
+            R, a, b = np.unravel_index(np.argmax(temp), temp.shape)
         except:
             continue
-        B[r + (p - region), x + (a - region), y + (b - region)] = 1
+        B[r + (R - region), x + (a - region), y + (b - region)] = 1
 
     return B[:, R_max:-R_max, R_max:-R_max]
 
@@ -77,7 +77,7 @@ def hough_peaks(HoughSpace, num_peaks, nhood_size=3):
         HoughSpaceIdx = np.unravel_index(idx, HoughSpaceCopy.shape) # remap to shape of H
         indicies.append(HoughSpaceIdx)
 
-        # surpess indicies in neighborhood
+        # supress indicies in neighborhood
         idxRhos, idxThetas = HoughSpaceIdx # first separate x, y indexes from argmax(H)
         # if idxThetas is too close to the edges choose appropriate values
         if (idxThetas - (nhood_size/2)) < 0: min_x = 0

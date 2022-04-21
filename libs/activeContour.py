@@ -1,137 +1,138 @@
+import itertools
+from typing import Tuple
 import cv2
 import numpy as np
-import math
-# from edge_detection import sobel
-from scipy import signal,ndimage
 
-import utils
-
-Wline = 0
-Wterm = 0
-alpha = 0.1
-beta = 0.1
-
-def imagederivative(img,sigma,typeD):
-  x = np.zeros((49,49))
-  for i in range(49):
-      for j in range(49):
-          x[i][j] = j - 24
-  x = x.T
-  y = x.T
-  dgauss = x      
-  if (typeD=='x'):
-      for i in range(49):
-          for j in range(49):
-            dgauss[i][j]=-1*(x[i][j]/(2*math.pi*(sigma**4)))*np.exp(-1*(x[i][j]**2+y[i][j]**2)/(2*(sigma**2)))
-    #   for i in range(5):
-    #       print(dgauss[15][30+i])      
-    #   im2 = cv2.imread('BasicSnake_version2f/testimage2.png')
-    #   im2 = cv2.cvtColor(im2, cv2.COLOR_BGR2GRAY)
-    #   cv2.imwrite("der.jpg",signal.convolve2d(im2,dgauss,boundary='symm'))
-  elif (typeD=='y'):
-      for i in range(49):
-          for j in range(49):
-            dgauss[i][j]=-1*(y[i][j]/(2*math.pi*sigma**4))*np.exp(-1*(x[i][j]**2+y[i][j]**2)/(2*sigma**2))
-  elif (typeD=='xx'):
-      for i in range(49):
-          for j in range(49):
-            dgauss[i][j]=(1/(2*math.pi*sigma**4))(x[i][j]**2/sigma**2 - 1)*np.exp(-1*(x[i][j]**2+y[i][j]**2)/(2*sigma**2))
-  elif (typeD=='xy' or typeD=='yx'):
-      for i in range(49):
-          for j in range(49):
-            dgauss[i][j]=(1/(2*np.pi*sigma**4))(x[i][j]*y[i][j])*np.exp(-1*(x[i][j]**2+y[i][j]**2)/(2*sigma**2))
-  else:
-      for i in range(49):
-          for j in range(49):
-            dgauss[i][j]=(1/(2*np.pi*sigma**4))(y[i][j]**2/sigma**2 - 1)*np.exp(-1*(x[i][j]**2+y[i][j]**2)/(2*sigma**2))
-
-  return signal.convolve2d(img,dgauss,boundary='symm')      
+from libs import Sobel
 
 
-def move(matrix,contour,fext,gamma,kappa,delta,itr):
-    contour[0][contour[0]<1] = 1
-    contour[0][contour[0]>len(fext[0])] = len(fext[0])
-    
-    contour[1][contour[1]<1] = 1
-    contour[1][contour[1]>len(fext[0][1])] = len(fext[1][0])
+def iterate_contour(source: np.ndarray, contour_x: np.ndarray, contour_y: np.ndarray,
+                    external_energy: np.ndarray, window_coordinates: list,
+                    alpha: float, beta: float) -> Tuple[np.ndarray, np.ndarray]:
 
-    fext1 = [[],[]]
-    fext1[0] = kappa*ndimage.map_coordinates(fext[0],contour)
-    fext1[1] = kappa*ndimage.map_coordinates(fext[1],contour)
-    if(itr==0):
-        print(fext1[0][50])
-    if(itr==50):
-        print(fext1[0][50])
-    ssx = np.matrix(gamma*contour[0] + fext1[0])
-    ssy = np.matrix(gamma*contour[1] + fext1[1])
-    if np.shape(ssx)[0]==1:
-        ssx = ssx.T 
-    if np.shape(ssy)[0]==1:
-        ssy = ssy.T 
+    src = np.copy(source)
+    cont_x = np.copy(contour_x)
+    cont_y = np.copy(contour_y)
 
-    contour[0] = matrix * ssx;
-    contour[1] = matrix * ssy;
+    contour_points = len(cont_x)
 
-    contour[0][contour[0]<1] = 1
-    contour[0][contour[0]>len(fext[0])] = len(fext[0])
+    for Point in range(contour_points):
+        MinEnergy = np.inf
+        TotalEnergy = 0
+        NewX = None
+        NewY = None
+        for Window in window_coordinates:
+            # Create Temporary Contours With Point Shifted To A Coordinate
+            CurrentX, CurrentY = np.copy(cont_x), np.copy(cont_y)
+            CurrentX[Point] = CurrentX[Point] + Window[0] if CurrentX[Point] < src.shape[1] else src.shape[1] - 1
+            CurrentY[Point] = CurrentY[Point] + Window[1] if CurrentY[Point] < src.shape[0] else src.shape[0] - 1
 
-    contour[1][contour[1]<1] = 1
-    contour[1][contour[1]>len(fext[0][1])] = len(fext[1][0])
+            # Calculate Energy At The New Point
+            try:
+                TotalEnergy = - external_energy[CurrentY[Point], CurrentX[Point]] + calculate_internal_energy(CurrentX,
+                                                                                                              CurrentY,
+                                                                                                              alpha,
+                                                                                                              beta)
+            except:
+                pass
 
-    return contour
+            # Save The Point If It Has The Lowest Energy In The Window
+            if TotalEnergy < MinEnergy:
+                MinEnergy = TotalEnergy
+                NewX = CurrentX[Point] if CurrentX[Point] < src.shape[1] else src.shape[1] - 1
+                NewY = CurrentY[Point] if CurrentY[Point] < src.shape[0] else src.shape[0] - 1
 
-def get_external_energy(image):
-    Ix = imagederivative(image,8,'x')
-    Iy = imagederivative(image,8,'y')
+        # Shift The Point In The Contour To It's New Location With The Lowest Energy
+        cont_x[Point] = NewX
+        cont_y[Point] = NewY
 
-    return -2*np.sqrt(np.gradient(image)[0]**2 + np.gradient(image)[1]**2)
+    return cont_x, cont_y
 
 
-image = cv2.imread('BasicSnake_version2f/testimage2.png')
+def create_square_contour(source, num_xpoints, num_ypoints):
+    step = 5
 
-t = np.arange(0,2*np.pi ,0.05)
-x = int(np.shape(image)[0]/2)+130*np.cos(t)
-y = int(np.shape(image)[1]/2)+130*np.sin(t)
+    # Create x points lists
+    t1_x = np.arange(0, num_xpoints, step)
+    t2_x = np.repeat((num_xpoints) - step, num_xpoints // step)
+    t3_x = np.flip(t1_x)
+    t4_x = np.repeat(0, num_xpoints // step)
 
-image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-resultImage = np.zeros((np.shape(image)[0],np.shape(image)[1]))
-img = cv2.normalize(image.astype('float'), resultImage, 0.0, 1.0, cv2.NORM_MINMAX)
+    # Create y points list
+    t1_y = np.repeat(0, num_ypoints // step)
+    t2_y = np.arange(0, num_ypoints, step)
+    t3_y = np.repeat(num_ypoints - step, num_ypoints // step)
+    t4_y = np.flip(t2_y)
 
-external_energy = get_external_energy(img)
+    # Concatenate all the lists in one array
+    contour_x = np.array([t1_x, t2_x, t3_x, t4_x]).ravel()
+    contour_y = np.array([t1_y, t2_y, t3_y, t4_y]).ravel()
 
-fx = np.gradient(external_energy)[0]
-fy = np.gradient(external_energy)[1]
-# cv2.imwrite("external.jpg",cv2.normalize(fy.astype('float'), resultImage, 0.0, 255, cv2.NORM_MINMAX))
+    # Shift the shape to a specific location in the image
+    # contour_x = contour_x + (source.shape[1] // 2) - 85
+    contour_x = contour_x + (source.shape[1] // 2) - 95
+    contour_y = contour_y + (source.shape[0] // 2) - 40
 
-fext = [[],[]]
-fext[0] = -1*fx*(2*8**2)
-fext[1] = -1*fy*(2*8**2)
+    # Create neighborhood window
+    WindowCoordinates = GenerateWindowCoordinates(5)
 
-fext = np.array(fext)
+    return contour_x, contour_y, WindowCoordinates
 
-matrix = []
-first_row = np.zeros(len(x))
-first_row[0] = (2*alpha + 6*beta)
-first_row[1] = -1*(alpha + 4*beta)
-first_row[2] = beta
-first_row[-1] = first_row[1]
-first_row[-2] = first_row[2]
 
-matrix.append(first_row)
-for i in range(len(x) - 1):
-    matrix.append(np.roll(first_row,i))
+def create_elipse_contour(source, num_points):
+    # Create x and y lists coordinates to initialize the contour
+    t = np.arange(0, num_points / 10, 0.1)
 
-matrix = np.matrix(matrix)
-matrix = np.linalg.inv( matrix + 1*np.identity(len(x)))
+    # Coordinates for Circles_v2.png image
+    contour_x = (source.shape[1] // 2) + 117 * np.cos(t) - 100
+    contour_y = (source.shape[0] // 2) + 117 * np.sin(t) + 50
 
-contour = [np.array(x),np.array(y)]
+    contour_x = contour_x.astype(int)
+    contour_y = contour_y.astype(int)
 
-for i in range(300):    
-    contour = move(matrix,contour,fext,1,4,0.1,i)
-    img2 = image.copy()
-    img2 = cv2.cvtColor(img2, cv2.COLOR_GRAY2BGR)
+    # Create neighborhood window
+    WindowCoordinates = GenerateWindowCoordinates(5)
 
-    result = []
-    for j in range(len(contour[0])):
-        result = cv2.circle(img2,(int(contour[0][j]),int(contour[1][j])),3,[255,0,0],-1)
-    cv2.imwrite("result" + str(i) + ".jpg",result)
+    return contour_x, contour_y, WindowCoordinates
+
+
+def GenerateWindowCoordinates(Size: int):
+    # Generate List of All Possible Point Values Based on Size
+    Points = list(range(-Size // 2 + 1, Size // 2 + 1))
+    PointsList = [Points, Points]
+
+    # Generates All Possible Coordinates Inside The Window
+    Coordinates = list(itertools.product(*PointsList))
+    return Coordinates
+
+
+def calculate_internal_energy(CurrentX, CurrentY, alpha: float, beta: float):
+    JoinedXY = np.array((CurrentX, CurrentY))
+    Points = JoinedXY.T
+
+    # Continuous  Energy
+    PrevPoints = np.roll(Points, 1, axis=0)
+    NextPoints = np.roll(Points, -1, axis=0)
+    Displacements = Points - PrevPoints
+    PointDistances = np.sqrt(Displacements[:, 0] ** 2 + Displacements[:, 1] ** 2)
+    MeanDistance = np.mean(PointDistances)
+    ContinuousEnergy = np.sum((PointDistances - MeanDistance) ** 2)
+
+    # Curvature Energy
+    CurvatureSeparated = PrevPoints - 2 * Points + NextPoints
+    Curvature = (CurvatureSeparated[:, 0] ** 2 + CurvatureSeparated[:, 1] ** 2)
+    CurvatureEnergy = np.sum(Curvature)
+
+    return alpha * ContinuousEnergy + beta * CurvatureEnergy
+
+def calculate_external_energy(source, WLine, WEdge):
+    src = np.copy(source)
+    if len(src.shape) > 2:
+        gray = cv2.cvtColor(src, cv2.COLOR_RGB2GRAY)
+    else:
+        gray = src
+
+    ELine = cv2.GaussianBlur(gray,(7,7),7)	
+    EEdge = Sobel.sobel(ELine)
+    return WLine * ELine + WEdge * EEdge[1:-1,1:-1]
+
