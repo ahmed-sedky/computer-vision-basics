@@ -2,9 +2,13 @@ import itertools
 from typing import Tuple
 import cv2
 import numpy as np
+import matplotlib.pyplot as plt
 
 from libs import Sobel
 
+def calculateAreaPerimeter (contour_x: np.ndarray, contour_y: np.ndarray):
+    area=0.5*np.sum(contour_y[:-1]*np.diff(contour_x) - contour_x[:-1]*np.diff(contour_y))
+    return abs(area)
 
 def iterate_contour(source: np.ndarray, contour_x: np.ndarray, contour_y: np.ndarray,
                     external_energy: np.ndarray, window_coordinates: list,
@@ -83,10 +87,13 @@ def create_elipse_contour(source, num_points):
     # Create x and y lists coordinates to initialize the contour
     t = np.arange(0, num_points / 10, 0.1)
 
-    # Coordinates for Circles_v2.png image
-    contour_x = (source.shape[1] // 2) + 117 * np.cos(t) - 100
-    contour_y = (source.shape[0] // 2) + 117 * np.sin(t) + 50
+    #  Coordinates for Circles.png image
+    # contour_x = (source.shape[1] // 2) + 117 * np.cos(t) - 100
+    # contour_y = (source.shape[0] // 2) + 117 * np.sin(t) + 50
 
+    # Coordinates for fish.png image
+    contour_x = (source.shape[1] // 2) + 215 * np.cos(t)
+    contour_y = (source.shape[0] // 2) + 115 * np.sin(t) - 10
     contour_x = contour_x.astype(int)
     contour_y = contour_y.astype(int)
 
@@ -134,5 +141,13 @@ def calculate_external_energy(source, WLine, WEdge):
 
     ELine = cv2.GaussianBlur(gray,(7,7),7)	
     EEdge = Sobel.sobel(ELine)
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.imshow(EEdge, cmap='gray')
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.set_xlim(0, src.shape[1])
+    ax.set_ylim(src.shape[0], 0)
+    plt.show()
     return WLine * ELine + WEdge * EEdge[1:-1,1:-1]
 
