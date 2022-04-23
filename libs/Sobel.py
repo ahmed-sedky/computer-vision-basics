@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 from libs.utils import convolution
 from scipy.signal import convolve2d
-def sobel(img):
+def sobel(img,harris):
     # sobelHKernel = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]])
     # sobelVKernel = np.array([[-1, -2, -1], [0, 0, 0], [1, 2, 1]])
     # filteredImg = convolution(img, sobelHKernel)
@@ -17,9 +17,11 @@ def sobel(img):
         gray = img
     horizontal_edge = convolve2d(gray, horizontal)
     vertical_edge = convolve2d(gray, vertical)
-
-    mag = np.sqrt(pow(horizontal_edge, 2.0) + pow(vertical_edge, 2.0))
-    return mag
+    if(harris == True):
+        return horizontal_edge,vertical_edge
+    else:
+        mag = np.sqrt(pow(horizontal_edge, 2.0) + pow(vertical_edge, 2.0))
+        return mag
     
 
 
