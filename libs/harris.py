@@ -19,10 +19,8 @@ def corner2Image (image, harrisResponse , cornerThreshold = 0.01 ):
     cop_harris = np.copy(harrisResponse)
     harrisMatrix =cv2.dilate(cop_harris,None)
     hMax  = harrisMatrix.max()
-    hMin = harrisMatrix.min()
     corner_indices = np.array(harrisMatrix > (hMax * cornerThreshold), dtype="int8")
-    src = np.copy(image)
     corner_indices = corner_indices[2:,2:]
-    src[corner_indices == 1 ] = [0 , 255 ,0]
-    return src    
+    image[corner_indices == 1 ] = [0 , 255 ,0]
+    return image    
 
