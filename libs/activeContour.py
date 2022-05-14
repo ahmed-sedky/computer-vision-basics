@@ -106,5 +106,4 @@ def calculate_external_energy(source, WLine, WEdge):
     ELine = filters.gaussian_filter(gray,7,7)	
     EEdge = Sobel.sobel(ELine)
     
-    return WLine * ELine + WEdge * EEdge
 
