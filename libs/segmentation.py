@@ -19,14 +19,6 @@ def euclidean_distance(x1, x2):
     return np.sqrt(np.sum((x1 - x2) ** 2))
 
 
-def clusters_distance(cluster1, cluster2):
-    """
-    Computes distance between two clusters.
-    cluster1 and cluster2 are lists of lists of points
-    """
-    return max([euclidean_distance(point1, point2) for point1 in cluster1 for point2 in cluster2])
-
-
 def clusters_distance_2(cluster1, cluster2):
     """
     Computes distance between two centroids of the two clusters
@@ -376,3 +368,70 @@ def apply_mean_shift(source: np.ndarray, threshold: int = 60):
     output = ms.get_output()
 
     return output
+
+clusters_list = []
+cluster = {}
+centers = {}
+
+def initial_clusters( points):
+  
+    global initial_k
+    groups = {}
+    d = int(256 / initial_k)
+    for i in range(initial_k):
+        j = i * d
+        groups[(j, j, j)] = []
+    for i, p in enumerate(points):
+        go = min(groups.keys(), key=lambda c: np.sqrt(np.sum((p - c) ** 2)))
+        groups[go].append(p)
+    return [g for g in groups.values() if len(g) > 0]
+
+def fit(points):
+    global clusters_list
+    clusters_list = initial_clusters(points)
+
+    while len(clusters_list) > clusters_number:
+        cluster1, cluster2 = min(
+            [(c1, c2) for i, c1 in enumerate(clusters_list) for c2 in clusters_list[:i]],
+            key=lambda c: clusters_distance_2(c[0], c[1]))
+
+        clusters_list = [c for c in clusters_list if c != cluster1 and c != cluster2]
+
+        merged_cluster = cluster1 + cluster2
+
+        clusters_list.append(merged_cluster)
+
+    global cluster 
+    for cl_num, cl in enumerate(clusters_list):
+        for point in cl:
+            cluster[tuple(point)] = cl_num
+
+    global centers 
+    for cl_num, cl in enumerate(clusters_list):
+        centers[cl_num] = np.average(cl, axis=0)
+
+def predict_cluster(point):
+    global cluster
+  
+    return cluster[tuple(point)]
+
+def predict_center( point):
+  
+    point_cluster_num = predict_cluster(point)
+    center = centers[point_cluster_num]
+    return center
+
+# input_image = cv2.imread('../images/seg-image.png')
+
+def apply_agglomerative_clustering(source, number_of_clusters,initial_number_of_clusters):
+    global clusters_number
+    global initial_k
+    clusters_number = number_of_clusters
+    initial_k = initial_number_of_clusters 
+    src = np.copy(source.reshape((-1, 3)))
+
+    fit(src)
+
+    output_image = [[predict_center(list(src)) for src in row] for row in source]
+    output_image = np.array(output_image, np.uint8)
+    return output_image
