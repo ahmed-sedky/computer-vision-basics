@@ -251,11 +251,6 @@ class MeanShift:
 
     @staticmethod
     def create_feature_space(source: np.ndarray):
-        """
-        :param source:
-        :return:
-        """
-
         row = source.shape[0]
         col = source.shape[1]
 
@@ -263,7 +258,6 @@ class MeanShift:
         feature_space = np.zeros((row * col, 5))
 
         # Array to store RGB Values for each pixel
-        # rgb_array = np.array((1, 3))
 
         counter = 0
 
@@ -286,9 +280,6 @@ class MeanShift:
     def calculate_euclidean_distance(self, current_mean_random: bool, threshold: int):
         """
         calculate the Euclidean distance of all the other pixels in M with the current mean.
-        :param current_mean_random:
-        :param threshold:
-        :return:
         """
 
         below_threshold_arr = []
@@ -310,10 +301,6 @@ class MeanShift:
         return below_threshold_arr, self.current_mean_arr
 
     def get_new_mean(self, below_threshold_arr: list):
-        """
-        :param below_threshold_arr:
-        :return:
-        """
         iteration = 0.01
 
         # For all the rows found and placed in below_threshold_arr list, calculating the average of
@@ -381,3 +368,11 @@ class MeanShift:
             self.current_mean_arr[2] = mean_b
             self.current_mean_arr[3] = mean_i
             self.current_mean_arr[4] = mean_j
+
+def apply_mean_shift(source: np.ndarray, threshold: int = 60):
+    src = np.copy(source)
+    ms = MeanShift(source=src, threshold=threshold)
+    ms.run_mean_shift()
+    output = ms.get_output()
+
+    return output
