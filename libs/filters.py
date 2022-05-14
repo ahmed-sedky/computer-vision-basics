@@ -1,6 +1,5 @@
 from math import pi
 import numpy as np
-from scipy import signal
 from libs.edge_detection import sobel
 from libs.utils import median, convolution, rgb_to_bw
 
@@ -49,7 +48,7 @@ def median_filter(image):
 def gaussian_filter(image, size: int, std_dev: float):
     kernel = create_gaussian_kernel(size, std_dev)
     filtered_image = convolution(image, kernel)
-    filtered_image = filtered_image.astype(np.uint8)
+    # filtered_image = filtered_image.astype(np.uint8)
     return filtered_image
 
 def hybrid (image1 ,image2):
