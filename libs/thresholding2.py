@@ -41,11 +41,10 @@ def DoubleThreshold(Image, LowThreshold, HighThreshold, Weak, isRatio=True):
 
 
 
-def GetInitialThreshold(source: np.ndarray):
+def Initial_Threshold(source: np.ndarray):
     """
     Gets The Initial Threshold Used in The Optimal Threshold Method
-    :param source: NumPy Array of The Source Grayscale Image
-    :return Threshold: Initial Threshold Value
+
     """
     # Maximum X & Y Values For The Image
     MaxX = source.shape[1] - 1
@@ -68,12 +67,10 @@ def GetInitialThreshold(source: np.ndarray):
     return Threshold
 
 
-def GetOptimalThreshold(source: np.ndarray, Threshold):
+def Optimal_Threshold(source: np.ndarray, Threshold):
     """
     Calculates Optimal Threshold Based on Given Initial Threshold
-    :param source: NumPy Array of The Source Grayscale Image
-    :param Threshold: Initial Threshold
-    :return OptimalThreshold: Optimal Threshold Based on Given Initial Threshold
+
     """
     # Get Background Array, Consisting of All Pixels With Intensity Lower Than The Given Threshold
     Back = source[np.where(source < Threshold)]
@@ -89,25 +86,18 @@ def GetOptimalThreshold(source: np.ndarray, Threshold):
 
 
 def optimal(source: np.ndarray):
-    """
-    Applies Thresholding To The Given Grayscale Image Using The Optimal Thresholding Method
-    :param source: NumPy Array of The Source Grayscale Image
-    :return: Thresholded Image
-    """
+
 
     src = np.copy(source)
-
-
     # Calculate Initial Thresholds Used in Iteration
-    print(f"src in optimal: {src}")
-    print(f"src shape: {src.shape}")
-    OldThreshold = GetInitialThreshold(src)
-    NewThreshold = GetOptimalThreshold(src, OldThreshold)
+
+    OldThreshold = Initial_Threshold(src)
+    NewThreshold = Optimal_Threshold(src, OldThreshold)
     iteration = 0
     # Iterate Till The Threshold Value is Constant Across Two Iterations
     while OldThreshold != NewThreshold:
         OldThreshold = NewThreshold
-        NewThreshold = GetOptimalThreshold(src, OldThreshold)
+        NewThreshold = Optimal_Threshold(src, OldThreshold)
         iteration += 1
     # src[src >= 25] = 0
     # Return Thresholded Image Using Global Thresholding
@@ -115,11 +105,8 @@ def optimal(source: np.ndarray):
 
 
 def otsu(source: np.ndarray):
-    """
-     Applies Thresholding To The Given Grayscale Image Using Otsu's Thresholding Method
-     :param source: NumPy Array of The Source Grayscale Image
-     :return: Thresholded Image
-     """
+
+
     src = np.copy(source)
     # Get Image Dimensions
     YRange, XRange = src.shape
@@ -151,13 +138,9 @@ def otsu(source: np.ndarray):
 
 
 def spectral(source: np.ndarray):
-    """
-     Applies Thresholding To The Given Grayscale Image Using Spectral Thresholding Method
-     :param source: NumPy Array of The Source Grayscale Image
-     :return: Thresholded Image
-     """
-    src = np.copy(source)
 
+
+    src = np.copy(source)
     # Get Image Dimensions
     YRange, XRange = src.shape
     # Get The Values of The Histogram Bins
@@ -222,7 +205,6 @@ def LocalThresholding(source: np.ndarray, Regions, ThresholdingFunction):
        :param source: NumPy Array of The Source Grayscale Image
        :param Regions: Number of Regions To Divide The Image To
        :param ThresholdingFunction: Function That Does The Thresholding
-       :return: Thresholded Image
        """
     src = np.copy(source)
     YMax, XMax = src.shape
@@ -244,27 +226,7 @@ def LocalThresholding(source: np.ndarray, Regions, ThresholdingFunction):
     return Result
 
 
-def IsolatedTests():
-    
-    img = cv2.imread("C:/Users/Mo/Desktop/CV/lenna.png" , 0)
-    # thresholded_image = optimal(img)
-    # thresholded_image = LocalThresholding(img, 4 , spectral)
-    # thresholded_image = LocalThresholding(img, 4 , otsu)
-    # thresholded_image = LocalThresholding(img, 4 , optimal)
-    thresholded_image = otsu(img)
-    # thresholded_image = spectral(img)
-    fig, ax = plt.subplots(2)
-    ax[0].imshow(img, cmap='gray')
-    ax[0].title.set_text('Source Image')
-    ax[0].set_axis_off()
-    ax[1].imshow(thresholded_image, cmap='gray')
-    ax[1].title.set_text(' Thresholded image ')
-    ax[1].set_axis_off()
-    plt.show()
 
-
-if __name__ == "__main__":
-    IsolatedTests()
 
 
 
